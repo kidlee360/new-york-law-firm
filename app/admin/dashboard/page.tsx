@@ -16,6 +16,25 @@ async function DashboardContent() {
   }
   
   const cases = await getAttorneyDashboardData(user.id);
+
+  // Calculate statistics
+  const activeCasesCount = cases.length;
+  const pendingServiceCount = cases.filter(c => c.status === 'intake' || c.status === 'pending').length;
+  
+  const today = new Date();
+  const sevenDaysFromNow = new Date();
+  sevenDaysFromNow.setDate(today.getDate() + 7);
+
+  let urgentDeadlinesCount = 0;
+  cases.forEach(c => {
+    c.deadlines?.forEach(d => {
+      const dueDate = new Date(d.due_date);
+      if (!d.completed && dueDate >= today && dueDate <= sevenDaysFromNow) {
+        urgentDeadlinesCount++;
+      }
+    });
+  });
+  const filesToReviewCount = cases.filter(c => c.status === 'discovery').length;
   
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8">
@@ -33,10 +52,10 @@ async function DashboardContent() {
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <StatCard title="Active Cases" value={cases.length} icon={<Scale className="h-4 w-4" />} />
-        <StatCard title="Pending Service" value="3" icon={<Clock className="h-4 w-4" />} color="text-amber-600" />
-        <StatCard title="Urgent Deadlines" value="1" icon={<AlertCircle className="h-4 w-4" />} color="text-red-600" />
-        <StatCard title="Files to Review" value="12" icon={<FileText className="h-4 w-4" />} />
+        <StatCard title="Active Cases" value={activeCasesCount} icon={<Scale className="h-4 w-4" />} />
+        <StatCard title="Pending Service" value={pendingServiceCount} icon={<Clock className="h-4 w-4" />} color="text-amber-600" />
+        <StatCard title="Urgent Deadlines" value={urgentDeadlinesCount} icon={<AlertCircle className="h-4 w-4" />} color="text-red-600" />
+        <StatCard title="Files to Review" value={filesToReviewCount} icon={<FileText className="h-4 w-4" />} />
       </div>
 
       {/* Case Table */}
