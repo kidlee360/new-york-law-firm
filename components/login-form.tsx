@@ -38,8 +38,26 @@ export function LoginForm({
         password,
       });
       if (error) throw error;
+      // Get the authenticated user role
+      const { data: { user} } = await supabase.auth.getUser();
+
+      // The user object contains the user's ID, which we can use to query the profiles table for the user's role since the user's profile is linked to the user ID in the profiles table.
+      const { data: profile} = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user?.id)
+      .single();
+
+      console.log("User profile:", profile?.role);
+      if (profile?.role === "lawyer") {
+        router.push("/admin/dashboard");
+      } else if (profile?.role === "client") {
+        router.push("/protected");
+      }else {
+        router.push("/auth/login");
+      }
       // Update this route to redirect to an authenticated route. The user already has an active session.
-      router.push("/protected");
+      //router.push("/protected");
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
