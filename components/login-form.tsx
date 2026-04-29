@@ -49,7 +49,7 @@ export function LoginForm({
       .single();
 
       console.log("User profile:", profile?.role);
-      if (profile?.role === "lawyer") {
+      if (profile?.role === "attorney") {
         router.push("/admin/dashboard");
       } else if (profile?.role === "client") {
         router.push("/protected");
