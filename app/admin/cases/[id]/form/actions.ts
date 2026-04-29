@@ -106,3 +106,36 @@ export async function updateDeadlineStatus(caseId: string, deadlineId: string, c
 
   revalidatePath(`/admin/cases/${caseId}`); // Revalidate the case page to show updated status
 }
+
+export async function addAsset(caseId: string, formData: FormData) {
+  const supabase = await createClient();
+  
+  const data = {
+    case_id: caseId,
+    asset_type: formData.get('new_asset_type') as string,
+    description: formData.get('new_description') as string,
+    estimated_value: parseFloat(formData.get('new_value') as string) || 0,
+  };
+
+  const { error } = await supabase.from('assets').insert(data);
+  if (error) throw error;
+
+  revalidatePath(`/admin/cases/${caseId}`);
+}
+
+export async function addNote(caseId: string, formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const content = formData.get('note_content') as string;
+  
+  if (!content || !user) return;
+
+  const { error } = await supabase.from('notes').insert({
+    case_id: caseId,
+    content: content,
+    user_id: user.id
+  });
+
+  if (error) throw error;
+  revalidatePath(`/admin/cases/${caseId}`);
+}

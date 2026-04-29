@@ -13,9 +13,12 @@ import {
   Briefcase,
   Save,
   CheckCircle2,
-  Trash2
+  Trash2,
+  Plus,
+  MessageSquare,
+  PlusCircle
 } from "lucide-react";
-import { updateCase, deleteCase, updateDeadlineStatus } from './form/actions';
+import { updateCase, deleteCase, updateDeadlineStatus, addAsset, addNote } from './form/actions';
 import React, { Suspense } from 'react';
 
 async function getCaseDetails(id: string) {
@@ -26,7 +29,8 @@ async function getCaseDetails(id: string) {
       *,
       parties (*),
       assets (*),
-      deadlines (*)
+      deadlines (*),
+      notes (*, profiles:user_id(full_name))
     `)
     .eq('id', id)
     .single();
@@ -45,6 +49,8 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
 
   const updateAction = updateCase.bind(null, id);
   const deleteAction = deleteCase.bind(null, id);
+  const addAssetAction = addAsset.bind(null, id);
+  const addNoteAction = addNote.bind(null, id);
 
   const client = caseData.parties?.find((p: any) => p.is_client);
   const adverseParty = caseData.parties?.find((p: any) => !p.is_client);
@@ -212,6 +218,33 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                         </td>
                       </tr>
                     ))}
+                    {/* Quick Add Asset Row */}
+                    <tr className="bg-blue-50/30">
+                      <td className="px-6 py-3">
+                        <select name="new_asset_type" className="bg-transparent border-dashed border-slate-300 rounded text-sm w-full focus:ring-blue-500">
+                          <option value="real_estate">Real Estate</option>
+                          <option value="bank_account">Bank Account</option>
+                          <option value="investment">Investment</option>
+                          <option value="retirement">Retirement</option>
+                          <option value="other">Other</option>
+                        </select>
+                      </td>
+                      <td className="px-6 py-3">
+                        <input name="new_description" placeholder="New asset description..." className="bg-transparent border-dashed border-slate-300 rounded text-sm w-full" />
+                      </td>
+                      <td className="px-6 py-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-slate-400 text-sm">$</span>
+                          <input name="new_value" type="number" placeholder="0.00" className="bg-transparent border-dashed border-slate-300 rounded text-sm w-24 text-right" />
+                          <button 
+                            formAction={addAssetAction}
+                            className="p-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -245,6 +278,44 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                     </div>
                   );
                 })}
+              </div>
+            </div>
+
+            {/* Case Notes Section */}
+            <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                <h3 className="font-semibold flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4 text-slate-400" />
+                  Case Notes & Activity
+                </h3>
+              </div>
+              <div className="p-6 space-y-6">
+                <div className="flex gap-4">
+                  <textarea 
+                    name="note_content"
+                    placeholder="Add a case update or strategy note..."
+                    className="flex-1 border border-slate-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 min-h-[80px]"
+                  />
+                  <button formAction={addNoteAction} className="bg-slate-100 text-slate-700 px-4 rounded-lg hover:bg-slate-200 transition-colors self-end h-10 flex items-center gap-2 text-sm font-medium">
+                    <PlusCircle className="h-4 w-4" />
+                    Post Note
+                  </button>
+                </div>
+                <div className="space-y-4 border-t border-slate-50 pt-4">
+                  {caseData.notes?.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).map((note: any) => (
+                    <div key={note.id} className="bg-slate-50/50 p-4 rounded-lg border border-slate-100">
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="text-xs font-bold text-blue-600 uppercase">
+                          {note.profiles?.full_name || 'Attorney'}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-bold uppercase">
+                          {new Date(note.created_at).toLocaleString()}
+                        </span>
+                      </div>
+                      <p className="text-sm text-slate-800 leading-relaxed">{note.content}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
