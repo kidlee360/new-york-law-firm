@@ -12,9 +12,10 @@ import {
   DollarSign,
   Briefcase,
   Save,
+  CheckCircle2,
   Trash2
 } from "lucide-react";
-import { updateCase, deleteCase } from './form/actions';
+import { updateCase, deleteCase, updateDeadlineStatus } from './form/actions';
 import React, { Suspense } from 'react';
 
 async function getCaseDetails(id: string) {
@@ -175,15 +176,75 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                   <tbody className="divide-y divide-slate-100">
                     {caseData.assets?.map((asset: any) => (
                       <tr key={asset.id}>
-                        <td className="px-6 py-4 text-sm capitalize">{asset.asset_type.replace('_', ' ')}</td>
-                        <td className="px-6 py-4 text-sm text-slate-600">{asset.description}</td>
+                        <td className="px-6 py-4 text-sm capitalize">
+                          <input type="hidden" name={`assets[${asset.id}][id]`} value={asset.id} />
+                          <select
+                            name={`assets[${asset.id}][asset_type]`}
+                            defaultValue={asset.asset_type}
+                            className="bg-transparent border-none p-0 focus:ring-0 w-full"
+                          >
+                            <option value="real_estate">Real Estate</option>
+                            <option value="bank_account">Bank Account</option>
+                            <option value="investment">Investment</option>
+                            <option value="retirement">Retirement</option>
+                            <option value="vehicle">Vehicle</option>
+                            <option value="other">Other</option>
+                          </select>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-slate-600">
+                          <input
+                            name={`assets[${asset.id}][description]`}
+                            defaultValue={asset.description}
+                            className="bg-transparent border-none p-0 focus:ring-0 w-full"
+                          />
+                        </td>
                         <td className="px-6 py-4 text-sm text-right font-medium">
-                          ${Number(asset.estimated_value).toLocaleString()}
+                          <div className="flex items-center justify-end">
+                            <span>$</span>
+                            <input
+                              name={`assets[${asset.id}][estimated_value]`}
+                              type="number"
+                              step="0.01"
+                              defaultValue={asset.estimated_value}
+                              className="bg-transparent border-none p-0 focus:ring-0 font-medium text-right w-24"
+                            />
+                          </div>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
+              </div>
+            </div>
+
+            {/* Deadlines Section */}
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-100">
+                <h3 className="font-semibold">Case Deadlines</h3>
+              </div>
+              <div className="p-6 space-y-4">
+                {caseData.deadlines?.map((deadline: any) => {
+                  const markAsCompleteAction = updateDeadlineStatus.bind(null, id, deadline.id, true);
+                  return (
+                    <div key={deadline.id} className="flex items-center justify-between p-3 rounded-lg border border-slate-100 hover:bg-slate-50 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className={`h-2 w-2 rounded-full ${deadline.completed ? 'bg-slate-300' : 'bg-amber-500'}`} />
+                        <div>
+                          <p className={`text-sm font-medium ${deadline.completed ? 'text-slate-400 line-through' : 'text-slate-900'}`}>{deadline.title}</p>
+                          <p className="text-xs text-slate-500 italic">Due: {new Date(deadline.due_date).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                      {!deadline.completed && (
+                        <form action={markAsCompleteAction}>
+                          <button type="submit" className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1">
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            Complete
+                          </button>
+                        </form>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
