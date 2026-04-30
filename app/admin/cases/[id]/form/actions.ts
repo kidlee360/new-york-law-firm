@@ -33,7 +33,7 @@ export async function updateCase(id: string, formData: FormData) {
   const assetMap = new Map<string, any>(); // Map to store assets by their index
 
   for (const [key, value] of formData.entries()) {
-    const match = key.match(/^assets\[(\d+)\]\[(.*?)\]$/);
+    const match = key.match(/^assets\[([^\]]+)\]\[([^\]]+)\]$/);
     if (match) {
       const index = match[1];
       const field = match[2];
@@ -69,6 +69,32 @@ export async function updateCase(id: string, formData: FormData) {
         console.error(`Update Asset Error for ID ${assetId}:`, assetError);
         throw new Error(`Failed to update asset ${assetId}: ${assetError.message}`);
       }
+    }
+  }
+
+  // --- Handle Expense Updates ---
+  const expenseMap = new Map<string, any>();
+  for (const [key, value] of formData.entries()) {
+    const match = key.match(/^expenses\[([^\]]+)\]\[([^\]]+)\]$/);
+    if (match) {
+      const index = match[1];
+      const field = match[2];
+      if (!expenseMap.has(index)) expenseMap.set(index, {});
+      const current = expenseMap.get(index);
+      if (field === 'amount') current[field] = parseFloat(value as string) || 0;
+      else current[field] = value;
+    }
+  }
+
+  for (const [expenseId, expenseUpdates] of expenseMap.entries()) {
+    const { error: expenseError } = await supabase
+      .from('expenses')
+      .update(expenseUpdates)
+      .eq('id', expenseId);
+
+    if (expenseError) {
+      console.error(`Update Expense Error for ID ${expenseId}:`, expenseError);
+      throw new Error(`Failed to update expense: ${expenseError.message}`);
     }
   }
 
@@ -120,6 +146,37 @@ export async function addAsset(caseId: string, formData: FormData) {
   const { error } = await supabase.from('assets').insert(data);
   if (error) throw error;
 
+  revalidatePath(`/admin/cases/${caseId}`);
+}
+
+export async function deleteAsset(caseId: string, assetId: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from('assets').delete().eq('id', assetId);
+
+  if (error) throw error;
+
+  revalidatePath(`/admin/cases/${caseId}`);
+}
+
+export async function addExpense(caseId: string, formData: FormData) {
+  const supabase = await createClient();
+  const data = {
+    case_id: caseId,
+    category: formData.get('new_exp_category') as string,
+    description: formData.get('new_exp_description') as string,
+    amount: parseFloat(formData.get('new_exp_amount') as string) || 0,
+  };
+
+  const { error } = await supabase.from('expenses').insert(data);
+  if (error) throw error;
+  revalidatePath(`/admin/cases/${caseId}`);
+}
+
+export async function deleteExpense(caseId: string, expenseId: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from('expenses').delete().eq('id', expenseId);
+
+  if (error) throw error;
   revalidatePath(`/admin/cases/${caseId}`);
 }
 

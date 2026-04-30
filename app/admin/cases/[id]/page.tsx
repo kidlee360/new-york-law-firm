@@ -18,9 +18,10 @@ import {
   MessageSquare,
   PlusCircle,
   FileIcon,
-  FolderOpen
+  FolderOpen,
+  Receipt
 } from "lucide-react";
-import { updateCase, deleteCase, updateDeadlineStatus, addAsset, addNote, uploadDocument, deleteDocument } from './form/actions';
+import { updateCase, deleteCase, updateDeadlineStatus, addAsset, addNote, uploadDocument, deleteDocument, deleteAsset, addExpense, deleteExpense } from './form/actions';
 import FileUploadClient from './file-upload-client';
 import React, { Suspense } from 'react';
 
@@ -34,7 +35,8 @@ async function getCaseDetails(id: string) {
       assets (*),
       deadlines (*),
       notes (*, profiles:user_id(full_name)),
-      documents (*, profiles:uploaded_by(full_name))
+      documents (*, profiles:uploaded_by(full_name)),
+      expenses (*)
     `)
     .eq('id', id)
     .single();
@@ -55,6 +57,9 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
   const deleteAction = deleteCase.bind(null, id);
   const addAssetAction = addAsset.bind(null, id);
   const addNoteAction = addNote.bind(null, id);
+  const deleteAssetAction = deleteAsset.bind(null, id);
+  const addExpenseAction = addExpense.bind(null, id);
+  const deleteExpenseAction = deleteExpense.bind(null, id);
   const uploadDocAction = uploadDocument.bind(null, id);
 
   const client = caseData.parties?.find((p: any) => p.is_client);
@@ -182,6 +187,7 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                       <th className="px-6 py-3">Asset Type</th>
                       <th className="px-6 py-3">Description</th>
                       <th className="px-6 py-3 text-right">Est. Value</th>
+                      <th className="px-6 py-3 text-right"></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -221,6 +227,14 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                             />
                           </div>
                         </td>
+                        <td className="px-6 py-4 text-right">
+                          <button 
+                            formAction={deleteAssetAction.bind(null, asset.id)}
+                            className="text-slate-300 hover:text-red-600 transition-colors"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </td>
                       </tr>
                     ))}
                     {/* Quick Add Asset Row */}
@@ -249,6 +263,89 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                           </button>
                         </div>
                       </td>
+                      <td></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Expenses Table */}
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                  <h3 className="font-semibold flex items-center gap-2">
+                    <Receipt className="h-4 w-4 text-slate-400" />
+                    Monthly Expenses (Net Worth Statement Prep)
+                  </h3>
+                </div>
+                <table className="w-full text-left">
+                  <thead className="bg-slate-50 text-xs uppercase text-slate-500 font-bold">
+                    <tr>
+                      <th className="px-6 py-3">Category</th>
+                      <th className="px-6 py-3">Description</th>
+                      <th className="px-6 py-3 text-right">Amount</th>
+                      <th className="px-6 py-3 text-right"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {caseData.expenses?.map((exp: any) => (
+                      <tr key={exp.id}>
+                        <td className="px-6 py-4 text-sm">
+                          <input 
+                            name={`expenses[${exp.id}][category]`}
+                            defaultValue={exp.category}
+                            className="bg-transparent border-none p-0 focus:ring-0 w-full"
+                          />
+                        </td>
+                        <td className="px-6 py-4 text-sm text-slate-600">
+                          <input 
+                            name={`expenses[${exp.id}][description]`}
+                            defaultValue={exp.description}
+                            className="bg-transparent border-none p-0 focus:ring-0 w-full"
+                          />
+                        </td>
+                        <td className="px-6 py-4 text-sm text-right font-medium">
+                          <div className="flex items-center justify-end">
+                            <span>$</span>
+                            <input 
+                              name={`expenses[${exp.id}][amount]`}
+                              type="number"
+                              step="0.01"
+                              defaultValue={exp.amount}
+                              className="bg-transparent border-none p-0 focus:ring-0 font-medium text-right w-20"
+                            />
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <button formAction={deleteExpenseAction.bind(null, exp.id)} className="text-slate-300 hover:text-red-600">
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    <tr className="bg-emerald-50/30">
+                      <td className="px-6 py-3">
+                        <select name="new_exp_category" className="bg-transparent border-dashed border-slate-300 rounded text-sm w-full">
+                          <option value="Housing">Housing</option>
+                          <option value="Utilities">Utilities</option>
+                          <option value="Food">Food</option>
+                          <option value="Clothing">Clothing</option>
+                          <option value="Medical">Medical</option>
+                          <option value="Insurance">Insurance</option>
+                          <option value="Other">Other</option>
+                        </select>
+                      </td>
+                      <td className="px-6 py-3">
+                        <input name="new_exp_description" placeholder="e.g. Electric Bill" className="bg-transparent border-dashed border-slate-300 rounded text-sm w-full" />
+                      </td>
+                      <td className="px-6 py-3">
+                        <div className="flex items-center gap-2">
+                          <input name="new_exp_amount" type="number" placeholder="0.00" className="bg-transparent border-dashed border-slate-300 rounded text-sm w-20 text-right" />
+                          <button formAction={addExpenseAction} className="p-1.5 bg-emerald-600 text-white rounded-md hover:bg-emerald-700">
+                            <Plus className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                      <td></td>
                     </tr>
                   </tbody>
                 </table>
