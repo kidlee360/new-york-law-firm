@@ -16,9 +16,12 @@ import {
   Trash2,
   Plus,
   MessageSquare,
-  PlusCircle
+  PlusCircle,
+  FileIcon,
+  FolderOpen
 } from "lucide-react";
-import { updateCase, deleteCase, updateDeadlineStatus, addAsset, addNote } from './form/actions';
+import { updateCase, deleteCase, updateDeadlineStatus, addAsset, addNote, uploadDocument, deleteDocument } from './form/actions';
+import FileUploadClient from './file-upload-client';
 import React, { Suspense } from 'react';
 
 async function getCaseDetails(id: string) {
@@ -30,7 +33,8 @@ async function getCaseDetails(id: string) {
       parties (*),
       assets (*),
       deadlines (*),
-      notes (*, profiles:user_id(full_name))
+      notes (*, profiles:user_id(full_name)),
+      documents (*, profiles:uploaded_by(full_name))
     `)
     .eq('id', id)
     .single();
@@ -51,6 +55,7 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
   const deleteAction = deleteCase.bind(null, id);
   const addAssetAction = addAsset.bind(null, id);
   const addNoteAction = addNote.bind(null, id);
+  const uploadDocAction = uploadDocument.bind(null, id);
 
   const client = caseData.parties?.find((p: any) => p.is_client);
   const adverseParty = caseData.parties?.find((p: any) => !p.is_client);
@@ -278,6 +283,64 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                     </div>
                   );
                 })}
+              </div>
+            </div>
+
+            {/* Discovery Repository / Document Management */}
+            <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <h3 className="font-semibold flex items-center gap-2">
+                  <FolderOpen className="h-4 w-4 text-slate-400" />
+                  Discovery Repository
+                </h3>
+                <div className="flex gap-2">
+                  <select name="category" className="text-xs border-slate-200 rounded-md py-1 bg-white">
+                    <option value="Discovery">Discovery</option>
+                    <option value="Pleading">Pleading</option>
+                    <option value="Financial">Financial</option>
+                    <option value="Correspondence">Correspondence</option>
+                  </select>
+                  <FileUploadClient uploadAction={uploadDocAction} />
+                </div>
+              </div>
+              <div className="p-0">
+                <table className="w-full text-left">
+                  <thead className="bg-slate-50/50 text-[10px] uppercase text-slate-400 font-bold border-b border-slate-100">
+                    <tr>
+                      <th className="px-6 py-2">Document Name</th>
+                      <th className="px-6 py-2 text-center">Category</th>
+                      <th className="px-6 py-2 text-right">Size / Date</th>
+                      <th className="px-6 py-2 text-right"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {caseData.documents?.map((doc: any) => (
+                      <tr key={doc.id} className="hover:bg-slate-50/30 transition-colors group">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <FileIcon className="h-4 w-4 text-blue-500" />
+                            <span className="text-sm font-medium text-slate-700">{doc.file_name}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-500 uppercase">{doc.category}</span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="text-xs text-slate-900 font-medium">{(doc.file_size / 1024 / 1024).toFixed(2)} MB</div>
+                          <div className="text-[10px] text-slate-400">{new Date(doc.created_at).toLocaleDateString()}</div>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <button formAction={deleteDocument.bind(null, id, doc.id, doc.file_path)} className="text-slate-300 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100">
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {!caseData.documents?.length && (
+                  <div className="py-12 text-center text-slate-400 text-sm italic">No documents uploaded yet.</div>
+                )}
               </div>
             </div>
 

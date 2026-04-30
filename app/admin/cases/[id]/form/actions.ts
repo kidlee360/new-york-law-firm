@@ -139,3 +139,53 @@ export async function addNote(caseId: string, formData: FormData) {
   if (error) throw error;
   revalidatePath(`/admin/cases/${caseId}`);
 }
+
+export async function uploadDocument(caseId: string, formData: FormData) {
+  const supabase = await createClient();
+  const file = formData.get('file') as File;
+  const category = formData.get('category') as string;
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!file || file.size === 0 || !user) return;
+
+  // 1. Upload file to Storage
+  const fileExt = file.name.split('.').pop();
+  const storagePath = `${caseId}/${Date.now()}-${file.name}`;
+  
+  const { error: storageError } = await supabase.storage
+    .from('case-files')
+    .upload(storagePath, file);
+
+  if (storageError) throw storageError;
+
+  // 2. Insert metadata into Database
+  const { error: dbError } = await supabase.from('documents').insert({
+    case_id: caseId,
+    file_path: storagePath,
+    file_name: file.name,
+    file_size: file.size,
+    content_type: file.type,
+    category: category || 'Discovery',
+    uploaded_by: user.id
+  });
+
+  if (dbError) throw dbError;
+  revalidatePath(`/admin/cases/${caseId}`);
+}
+
+export async function deleteDocument(caseId: string, documentId: string, filePath: string) {
+  const supabase = await createClient();
+  
+  // Delete from storage
+  const { error: storageError } = await supabase.storage
+    .from('case-files')
+    .remove([filePath]);
+    
+  if (storageError) throw storageError;
+
+  // Delete from DB
+  const { error: dbError } = await supabase.from('documents').delete().eq('id', documentId);
+  
+  if (dbError) throw dbError;
+  revalidatePath(`/admin/cases/${caseId}`);
+}
