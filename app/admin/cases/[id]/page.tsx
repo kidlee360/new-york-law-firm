@@ -19,9 +19,11 @@ import {
   PlusCircle,
   FileIcon,
   FolderOpen,
-  Receipt
+  Receipt,
+  Loader2
 } from "lucide-react";
 import { updateCase, deleteCase, updateDeadlineStatus, addAsset, addNote, uploadDocument, deleteDocument, deleteAsset, addExpense, deleteExpense, getSignedDocumentUrl } from './form/actions';
+import { SubmitButton } from './submit-button'; // Import the new SubmitButton
 import ConfirmButton from './confirm-button';
 import FileUploadClient from './file-upload-client';
 import React, { Suspense } from 'react';
@@ -83,19 +85,21 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
               <span className="text-sm font-medium">Back to Dashboard</span>
             </Link>
             <div className="flex gap-3">
-              <button 
-                type="submit" 
+              <SubmitButton 
                 form="case-form"
+                icon={<Save className="h-4 w-4" />}
+                loadingText="Saving..."
                 className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
               >
-                <Save className="h-4 w-4" />
                 Save Changes
-              </button>
+              </SubmitButton>
               <ConfirmButton 
                 action={deleteAction}
                 form="case-form"
                 confirmMessage="Are you sure you want to delete this entire case? This action cannot be undone."
                 className="flex items-center gap-2 bg-white border border-red-200 text-red-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-50 transition-colors"
+                loadingText="Deleting Case..."
+                loadingIcon={<Loader2 className="h-4 w-4 animate-spin" />}
               >
                 <Trash2 className="h-4 w-4" />
                 Delete
@@ -241,6 +245,8 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                             action={deleteAssetAction.bind(null, asset.id)}
                             confirmMessage="Delete this asset from the registry?"
                             className="text-slate-300 hover:text-red-600 transition-colors"
+                            loadingText="Deleting..."
+                            loadingIcon={<Loader2 className="h-4 w-4 animate-spin" />}
                           >
                             <Trash2 className="h-4 w-4" />
                           </ConfirmButton>
@@ -326,10 +332,12 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                           </div>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <ConfirmButton 
+                          <ConfirmButton
                             action={deleteExpenseAction.bind(null, exp.id)}
                             confirmMessage="Delete this expense item?"
                             className="text-slate-300 hover:text-red-600"
+                            loadingText="Deleting..."
+                            loadingIcon={<Loader2 className="h-4 w-4 animate-spin" />}
                           >
                             <Trash2 className="h-4 w-4" />
                           </ConfirmButton>
@@ -354,9 +362,11 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                       <td className="px-6 py-3">
                         <div className="flex items-center gap-2">
                           <input name="new_exp_amount" type="number" placeholder="0.00" className="bg-transparent border-dashed border-slate-300 rounded text-sm w-20 text-right" />
-                          <button formAction={addExpenseAction} className="p-1.5 bg-emerald-600 text-white rounded-md hover:bg-emerald-700">
-                            <Plus className="h-4 w-4" />
-                          </button>
+                          <SubmitButton formAction={addExpenseAction} className="p-1.5 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
+                            loadingText="Adding..."
+                          >
+                            {<Plus className="h-4 w-4" />}
+                          </SubmitButton>
                         </div>
                       </td>
                       <td></td>
@@ -384,11 +394,13 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                         </div>
                       </div>
                       {!deadline.completed && (
-                        <form action={markAsCompleteAction}>
-                          <button type="submit" className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1">
-                            <CheckCircle2 className="h-3.5 w-3.5" />
+                        <form action={markAsCompleteAction} className="flex"> {/* Added flex to align button content */}
+                          <SubmitButton className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                            icon={<CheckCircle2 className="h-3.5 w-3.5" />}
+                            loadingText="Completing..."
+                          >
                             Complete
-                          </button>
+                          </SubmitButton>
                         </form>
                       )}
                     </div>
@@ -447,10 +459,12 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                           <div className="text-[10px] text-slate-400">{new Date(doc.created_at).toLocaleDateString()}</div>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <ConfirmButton 
+                          <ConfirmButton
                             action={deleteDocument.bind(null, id, doc.id, doc.file_path)}
                             confirmMessage={`Permanently delete "${doc.file_name}"?`}
                             className="text-slate-300 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                            loadingText="Deleting..."
+                            loadingIcon={<Loader2 className="h-4 w-4 animate-spin" />}
                           >
                             <Trash2 className="h-4 w-4" />
                           </ConfirmButton>
@@ -480,10 +494,12 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                     placeholder="Add a case update or strategy note..."
                     className="flex-1 border border-slate-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 min-h-[80px]"
                   />
-                  <button formAction={addNoteAction} className="bg-slate-100 text-slate-700 px-4 rounded-lg hover:bg-slate-200 transition-colors self-end h-10 flex items-center gap-2 text-sm font-medium">
-                    <PlusCircle className="h-4 w-4" />
+                  <SubmitButton formAction={addNoteAction} className="bg-slate-100 text-slate-700 px-4 rounded-lg hover:bg-slate-200 transition-colors self-end h-10 flex items-center gap-2 text-sm font-medium"
+                    icon={<PlusCircle className="h-4 w-4" />}
+                    loadingText="Posting..."
+                  >
                     Post Note
-                  </button>
+                  </SubmitButton>
                 </div>
                 <div className="space-y-4 border-t border-slate-50 pt-4">
                   {caseData.notes?.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).map((note: any) => (

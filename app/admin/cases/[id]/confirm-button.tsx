@@ -1,6 +1,8 @@
 'use client'
 
 import React from 'react';
+import { useFormStatus } from 'react-dom';
+import { Loader2 } from 'lucide-react';
 
 interface ConfirmButtonProps {
   action: (formData: FormData) => void | Promise<void>;
@@ -8,6 +10,9 @@ interface ConfirmButtonProps {
   className?: string;
   children: React.ReactNode;
   form?: string;
+  // Optional props for loading state
+  loadingText?: string;
+  loadingIcon?: React.ReactNode; // e.g., <Loader2 className="h-4 w-4 animate-spin" />
 }
 
 export default function ConfirmButton({ 
@@ -15,20 +20,35 @@ export default function ConfirmButton({
   confirmMessage, 
   className, 
   children,
-  form
+  form,
+  loadingText = 'Processing...', // Default loading text
+  loadingIcon // Will be provided by parent, or default to a spinner
 }: ConfirmButtonProps) {
+  const { pending } = useFormStatus();
+
   return (
     <button
       formAction={async (formData: FormData) => {
-        if (window.confirm(confirmMessage)) {
-          await action(formData);
+        // Only show confirm dialog if not already pending
+        if (!pending) {
+          if (window.confirm(confirmMessage)) {
+            await action(formData);
+          }
         }
       }}
       className={className}
       form={form}
+      disabled={pending} // Disable button when pending
       type="submit"
     >
-      {children}
+      {pending ? (
+        <>
+          {loadingIcon || <Loader2 className="h-4 w-4 animate-spin" />}
+          {loadingText}
+        </>
+      ) : (
+        children
+      )}
     </button>
   );
 }
