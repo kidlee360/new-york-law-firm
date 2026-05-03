@@ -22,6 +22,7 @@ import {
   Receipt
 } from "lucide-react";
 import { updateCase, deleteCase, updateDeadlineStatus, addAsset, addNote, uploadDocument, deleteDocument, deleteAsset, addExpense, deleteExpense, getSignedDocumentUrl } from './form/actions';
+import ConfirmButton from './confirm-button';
 import FileUploadClient from './file-upload-client';
 import React, { Suspense } from 'react';
 
@@ -90,14 +91,15 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                 <Save className="h-4 w-4" />
                 Save Changes
               </button>
-              <button 
-                formAction={deleteAction}
+              <ConfirmButton 
+                action={deleteAction}
                 form="case-form"
+                confirmMessage="Are you sure you want to delete this entire case? This action cannot be undone."
                 className="flex items-center gap-2 bg-white border border-red-200 text-red-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-50 transition-colors"
               >
                 <Trash2 className="h-4 w-4" />
                 Delete
-              </button>
+              </ConfirmButton>
               <Link 
                 href={`/admin/newCaseSheet/pdfDownload?case_number=${caseData.case_number}`}
                 className="flex items-center gap-2 bg-white border border-slate-300 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50"
@@ -235,12 +237,13 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                           </div>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <button 
-                            formAction={deleteAssetAction.bind(null, asset.id)}
+                          <ConfirmButton 
+                            action={deleteAssetAction.bind(null, asset.id)}
+                            confirmMessage="Delete this asset from the registry?"
                             className="text-slate-300 hover:text-red-600 transition-colors"
                           >
                             <Trash2 className="h-4 w-4" />
-                          </button>
+                          </ConfirmButton>
                         </td>
                       </tr>
                     ))}
@@ -323,9 +326,13 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                           </div>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <button formAction={deleteExpenseAction.bind(null, exp.id)} className="text-slate-300 hover:text-red-600">
+                          <ConfirmButton 
+                            action={deleteExpenseAction.bind(null, exp.id)}
+                            confirmMessage="Delete this expense item?"
+                            className="text-slate-300 hover:text-red-600"
+                          >
                             <Trash2 className="h-4 w-4" />
-                          </button>
+                          </ConfirmButton>
                         </td>
                       </tr>
                     ))}
@@ -440,9 +447,13 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                           <div className="text-[10px] text-slate-400">{new Date(doc.created_at).toLocaleDateString()}</div>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <button formAction={deleteDocument.bind(null, id, doc.id, doc.file_path)} className="text-slate-300 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100">
+                          <ConfirmButton 
+                            action={deleteDocument.bind(null, id, doc.id, doc.file_path)}
+                            confirmMessage={`Permanently delete "${doc.file_name}"?`}
+                            className="text-slate-300 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                          >
                             <Trash2 className="h-4 w-4" />
-                          </button>
+                          </ConfirmButton>
                         </td>
                       </tr>
                     ))}
