@@ -21,7 +21,7 @@ import {
   FolderOpen,
   Receipt
 } from "lucide-react";
-import { updateCase, deleteCase, updateDeadlineStatus, addAsset, addNote, uploadDocument, deleteDocument, deleteAsset, addExpense, deleteExpense } from './form/actions';
+import { updateCase, deleteCase, updateDeadlineStatus, addAsset, addNote, uploadDocument, deleteDocument, deleteAsset, addExpense, deleteExpense, getSignedDocumentUrl } from './form/actions';
 import FileUploadClient from './file-upload-client';
 import React, { Suspense } from 'react';
 
@@ -60,6 +60,13 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
   const deleteAssetAction = deleteAsset.bind(null, id);
   const addExpenseAction = addExpense.bind(null, id);
   const deleteExpenseAction = deleteExpense.bind(null, id);
+
+  // Function to handle document download
+  const handleDownload = async (filePath: string) => {
+    const url = await getSignedDocumentUrl(filePath);
+    if (url) window.open(url, '_blank');
+  };
+
   const uploadDocAction = uploadDocument.bind(null, id);
 
   const client = caseData.parties?.find((p: any) => p.is_client);
@@ -415,8 +422,14 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                       <tr key={doc.id} className="hover:bg-slate-50/30 transition-colors group">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <FileIcon className="h-4 w-4 text-blue-500" />
-                            <span className="text-sm font-medium text-slate-700">{doc.file_name}</span>
+                            <FileIcon className="h-4 w-4 text-blue-500 shrink-0" />
+                            <button
+                              type="button"
+                              onClick={() => handleDownload(doc.file_path)}
+                              className="text-sm font-medium text-slate-700 hover:text-blue-600 hover:underline text-left"
+                            >
+                              {doc.file_name}
+                            </button>
                           </div>
                         </td>
                         <td className="px-6 py-4 text-center">

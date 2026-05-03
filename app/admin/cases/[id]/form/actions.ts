@@ -246,3 +246,16 @@ export async function deleteDocument(caseId: string, documentId: string, filePat
   if (dbError) throw dbError;
   revalidatePath(`/admin/cases/${caseId}`);
 }
+
+export async function getSignedDocumentUrl(filePath: string): Promise<string | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.storage
+    .from('case-files')
+    .createSignedUrl(filePath, 60 * 60); // URL valid for 1 hour
+
+  if (error) {
+    console.error('Error creating signed URL:', error);
+    return null;
+  }
+  return data.signedUrl;
+}
