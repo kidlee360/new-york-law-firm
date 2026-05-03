@@ -22,7 +22,12 @@ export async function performConflictCheck(name: string) {
   };
 }
 
-export async function createNewNYCase(caseData: any, deadlineDate: string) {
+export async function createNewNYCase(
+  caseData: any, 
+  deadlineDate: string, 
+  clientPartyData: any, 
+  spousePartyData: any
+) {
   const supabase = await createClient();
 
   // 1. Create the Case
@@ -34,7 +39,25 @@ export async function createNewNYCase(caseData: any, deadlineDate: string) {
 
   if (caseError) throw caseError;
 
-  // 2. Automatically create the 120-Day Deadline task
+  // 2. Create the Client Party record
+  const { error: clientError } = await supabase
+    .from('parties')
+    .insert([{
+      ...clientPartyData,
+      case_id: newCase.id
+    }]);
+  if (clientError) throw clientError;
+
+  // 3. Create the Spouse Party record
+  const { error: spouseError } = await supabase
+    .from('parties')
+    .insert([{
+      ...spousePartyData,
+      case_id: newCase.id
+    }]);
+  if (spouseError) throw spouseError;
+
+  // 4. Automatically create the 120-Day Deadline task
   const { error: deadlineError } = await supabase
     .from('deadlines')
     .insert([{
