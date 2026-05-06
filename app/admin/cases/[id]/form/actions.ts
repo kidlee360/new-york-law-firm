@@ -4,6 +4,21 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
+// Helper function to get user's role
+async function getUserRole(userId: string): Promise<string | null> {
+  const supabase = await createClient();
+  const { data: profile, error } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', userId)
+    .single();
+
+  if (error || !profile) {
+    return null;
+  }
+  return profile.role;
+}
+
 export async function updateCase(id: string, formData: FormData) {
   const supabase = await createClient()
   
@@ -13,6 +28,13 @@ export async function updateCase(id: string, formData: FormData) {
     grounds: formData.get('grounds') as string,
     maintenance_guideline: parseFloat(formData.get('maintenance_guideline') as string) || 0,
     child_support_guideline: parseFloat(formData.get('child_support_guideline') as string) || 0,
+  }
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Unauthorized: User not logged in.');
+  const userRole = await getUserRole(user.id);
+  if (!userRole || (userRole !== 'admin' && userRole !== 'attorney' && userRole !== 'paralegal')) {
+    throw new Error('Forbidden: You do not have permission to update case details.');
   }
 
   // Update the main case details
@@ -73,6 +95,13 @@ export async function updateCase(id: string, formData: FormData) {
   }
 
   // --- Handle Expense Updates ---
+  // Permissions check for expense updates
+  if (!userRole || (userRole !== 'admin' && userRole !== 'attorney' && userRole !== 'paralegal')) {
+    throw new Error('Forbidden: You do not have permission to update expenses.');
+  }
+
+
+
   const expenseMap = new Map<string, any>();
   for (const [key, value] of formData.entries()) {
     const match = key.match(/^expenses\[([^\]]+)\]\[([^\]]+)\]$/);
@@ -103,6 +132,13 @@ export async function updateCase(id: string, formData: FormData) {
 
 export async function deleteCase(id: string) {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Unauthorized: User not logged in.');
+  const userRole = await getUserRole(user.id);
+  if (!userRole || userRole !== 'admin') { // Only admin can delete a case
+    throw new Error('Forbidden: You do not have permission to delete cases.');
+  }
+
   const { error } = await supabase
     .from('cases')
     .delete()
@@ -119,6 +155,12 @@ export async function deleteCase(id: string) {
 // NEW ACTION: Update Deadline Status
 export async function updateDeadlineStatus(caseId: string, deadlineId: string, completed: boolean) {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Unauthorized: User not logged in.');
+  const userRole = await getUserRole(user.id);
+  if (!userRole || (userRole !== 'admin' && userRole !== 'attorney' && userRole !== 'paralegal')) {
+    throw new Error('Forbidden: You do not have permission to update deadline status.');
+  }
 
   const { error } = await supabase
     .from('deadlines')
@@ -135,6 +177,12 @@ export async function updateDeadlineStatus(caseId: string, deadlineId: string, c
 
 export async function addAsset(caseId: string, formData: FormData) {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Unauthorized: User not logged in.');
+  const userRole = await getUserRole(user.id);
+  if (!userRole || (userRole !== 'admin' && userRole !== 'attorney' && userRole !== 'paralegal')) {
+    throw new Error('Forbidden: You do not have permission to add assets.');
+  }
   
   const data = {
     case_id: caseId,
@@ -151,6 +199,12 @@ export async function addAsset(caseId: string, formData: FormData) {
 
 export async function deleteAsset(caseId: string, assetId: string) {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Unauthorized: User not logged in.');
+  const userRole = await getUserRole(user.id);
+  if (!userRole || (userRole !== 'admin' && userRole !== 'attorney' && userRole !== 'paralegal')) {
+    throw new Error('Forbidden: You do not have permission to delete assets.');
+  }
   const { error } = await supabase.from('assets').delete().eq('id', assetId);
 
   if (error) throw error;
@@ -160,6 +214,12 @@ export async function deleteAsset(caseId: string, assetId: string) {
 
 export async function addExpense(caseId: string, formData: FormData) {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Unauthorized: User not logged in.');
+  const userRole = await getUserRole(user.id);
+  if (!userRole || (userRole !== 'admin' && userRole !== 'attorney' && userRole !== 'paralegal')) {
+    throw new Error('Forbidden: You do not have permission to add expenses.');
+  }
   const data = {
     case_id: caseId,
     category: formData.get('new_exp_category') as string,
@@ -174,6 +234,12 @@ export async function addExpense(caseId: string, formData: FormData) {
 
 export async function deleteExpense(caseId: string, expenseId: string) {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Unauthorized: User not logged in.');
+  const userRole = await getUserRole(user.id);
+  if (!userRole || (userRole !== 'admin' && userRole !== 'attorney' && userRole !== 'paralegal')) {
+    throw new Error('Forbidden: You do not have permission to delete expenses.');
+  }
   const { error } = await supabase.from('expenses').delete().eq('id', expenseId);
 
   if (error) throw error;
@@ -186,6 +252,11 @@ export async function addNote(caseId: string, formData: FormData) {
   const content = formData.get('note_content') as string;
   
   if (!content || !user) return;
+
+  const userRole = await getUserRole(user.id);
+  if (!userRole || (userRole !== 'admin' && userRole !== 'attorney' && userRole !== 'paralegal')) {
+    throw new Error('Forbidden: You do not have permission to add notes.');
+  }
 
   const { error } = await supabase.from('notes').insert({
     case_id: caseId,
@@ -204,6 +275,11 @@ export async function uploadDocument(caseId: string, formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!file || file.size === 0 || !user) return;
+
+  const userRole = await getUserRole(user.id);
+  if (!userRole || (userRole !== 'admin' && userRole !== 'attorney' && userRole !== 'paralegal')) {
+    throw new Error('Forbidden: You do not have permission to upload documents.');
+  }
 
   // 1. Upload file to Storage
   const fileExt = file.name.split('.').pop();
@@ -232,6 +308,12 @@ export async function uploadDocument(caseId: string, formData: FormData) {
 
 export async function deleteDocument(caseId: string, documentId: string, filePath: string) {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Unauthorized: User not logged in.');
+  const userRole = await getUserRole(user.id);
+  if (!userRole || (userRole !== 'admin' && userRole !== 'attorney' && userRole !== 'paralegal')) {
+    throw new Error('Forbidden: You do not have permission to delete documents.');
+  }
   
   // Delete from storage
   const { error: storageError } = await supabase.storage
@@ -249,6 +331,13 @@ export async function deleteDocument(caseId: string, documentId: string, filePat
 
 export async function getSignedDocumentUrl(filePath: string): Promise<string | null> {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null; // Not strictly forbidden, but no signed URL for unauthenticated
+  const userRole = await getUserRole(user.id);
+  if (!userRole) return null; // No role, no access
+  // All authenticated users can view/download documents if they can access the case page
+  // A more granular check would ensure the user is linked to the case.
+
   const { data, error } = await supabase.storage
     .from('case-files')
     .createSignedUrl(filePath, 60 * 60); // URL valid for 1 hour

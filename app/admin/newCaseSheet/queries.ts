@@ -1,6 +1,22 @@
 'use server';
 
 import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+
+// Helper function to get user's role (consistent with form/actions.ts)
+async function getUserRole(userId: string): Promise<string | null> {
+  const supabase = await createClient();
+  const { data: profile, error } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', userId)
+    .single();
+
+  if (error || !profile) {
+    return null;
+  }
+  return profile.role;
+}
 
 export async function performConflictCheck(name: string) {
   const supabase = await createClient();
@@ -29,6 +45,14 @@ export async function createNewNYCase(
   spousePartyData: any
 ) {
   const supabase = await createClient();
+
+  // RBAC check: Only admin, attorney, or paralegal can create a new case
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Unauthorized: User not logged in.');
+  const userRole = await getUserRole(user.id);
+  if (!userRole || (userRole !== 'admin' && userRole !== 'attorney' && userRole !== 'paralegal')) {
+    throw new Error('Forbidden: You do not have permission to create new cases.');
+  }
 
   // 1. Create the Case
   const { data: newCase, error: caseError } = await supabase
@@ -74,6 +98,14 @@ export async function createNewNYCase(
 
 export async function saveCaseAssets(caseId: string, assets: any[]) {
   const supabase = await createClient();
+
+  // RBAC check: Only admin, attorney, or paralegal can save case assets
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Unauthorized: User not logged in.');
+  const userRole = await getUserRole(user.id);
+  if (!userRole || (userRole !== 'admin' && userRole !== 'attorney' && userRole !== 'paralegal')) {
+    throw new Error('Forbidden: You do not have permission to save case assets.');
+  }
 
   // Map the UI state to the database column names
   const assetsToInsert = assets.map(asset => ({

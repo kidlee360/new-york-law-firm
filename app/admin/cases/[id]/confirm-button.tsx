@@ -13,6 +13,7 @@ interface ConfirmButtonProps {
   // Optional props for loading state
   loadingText?: string;
   loadingIcon?: React.ReactNode; // e.g., <Loader2 className="h-4 w-4 animate-spin" />
+  disabled?: boolean; // Added disabled prop
 }
 
 export default function ConfirmButton({ 
@@ -22,7 +23,8 @@ export default function ConfirmButton({
   children,
   form,
   loadingText = 'Processing...', // Default loading text
-  loadingIcon // Will be provided by parent, or default to a spinner
+  loadingIcon, // Will be provided by parent, or default to a spinner
+  disabled = false // Default to false
 }: ConfirmButtonProps) {
   const { pending } = useFormStatus();
 
@@ -31,15 +33,17 @@ export default function ConfirmButton({
       formAction={async (formData: FormData) => {
         // Only show confirm dialog if not already pending
         if (!pending) {
-          if (window.confirm(confirmMessage)) {
-            await action(formData);
+          // Only show confirm dialog if not already pending and not externally disabled
+          if (!pending && !disabled) {
+            if (window.confirm(confirmMessage)) {
+              await action(formData);
+            }
           }
         }
       }}
       className={className}
       form={form}
-      disabled={pending} // Disable button when pending
-      type="submit"
+      disabled={pending || disabled} // Combine internal pending with external disabled
     >
       {pending ? (
         <>

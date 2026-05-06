@@ -11,9 +11,10 @@ interface SubmitButtonProps {
   icon?: React.ReactNode;
   loadingText?: string;
   formAction?: (formData: FormData) => void | Promise<void>;
+  disabled?: boolean; // Added disabled prop
 }
 
-export function SubmitButton({ children, className, form, icon, loadingText = 'Processing...', formAction }: SubmitButtonProps) {
+export function SubmitButton({ children, className, form, icon, loadingText = 'Processing...', formAction, disabled = false }: SubmitButtonProps) {
   const { pending } = useFormStatus();
 
   return (
@@ -22,7 +23,7 @@ export function SubmitButton({ children, className, form, icon, loadingText = 'P
       className={className}
       form={form}
       formAction={formAction}
-      disabled={pending}
+      disabled={pending || disabled} // Combine internal pending with external disabled
     >
       {pending ? <><Loader2 className="h-4 w-4 animate-spin" /> {loadingText}</> : <>{icon} {children}</>}
     </button>

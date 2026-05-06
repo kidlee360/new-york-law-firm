@@ -17,20 +17,41 @@ import {
   Plus,
   MessageSquare,
   PlusCircle,
-  FileIcon,
   FolderOpen,
   Receipt,
   Loader2
 } from "lucide-react";
-import { updateCase, deleteCase, updateDeadlineStatus, addAsset, addNote, uploadDocument, deleteDocument, deleteAsset, addExpense, deleteExpense, getSignedDocumentUrl } from './form/actions';
+import { updateCase, deleteCase, updateDeadlineStatus, addAsset, addNote, uploadDocument, deleteDocument, deleteAsset, addExpense, deleteExpense } from './form/actions';
 import { SubmitButton } from './submit-button'; // Import the new SubmitButton
 import ConfirmButton from './confirm-button';
+import DocumentDownloadButton from './document-download-button';
 import FileUploadClient from './file-upload-client';
 import React, { Suspense } from 'react';
 
 async function getCaseDetails(id: string) {
   const supabase = await createClient();
-  const { data, error } = await supabase
+
+  // Fetch current authenticated user
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) {
+    redirect('/login'); // User not authenticated
+  }
+
+  // Fetch user's role from profiles table
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  if (profileError || !profile) {
+    console.error('Error fetching user profile:', profileError);
+    redirect('/login'); // Or handle as unauthorized
+  }
+
+  const currentUserRole = profile.role;
+
+  const { data: caseDataResult, error: caseError } = await supabase
     .from('cases')
     .select(`
       *,
@@ -44,17 +65,26 @@ async function getCaseDetails(id: string) {
     .eq('id', id)
     .single();
 
-  if (error || !data) return null;
-  return data;
+  if (caseError || !caseDataResult) {
+    notFound(); // Case not found or other error
+  }
+
+  return { caseData: caseDataResult, currentUserRole, currentUserId: user.id };
 }
 
 async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const caseData = await getCaseDetails(id);
+  const { caseData, currentUserRole, currentUserId } = await getCaseDetails(id);
 
-  if (!caseData) {
-    notFound();
-  }
+  // Determine permissions based on role
+  const isAdmin = currentUserRole === 'admin';
+  const isAttorneyOrParalegal = currentUserRole === 'attorney' || currentUserRole === 'paralegal';
+  const isClient = currentUserRole === 'client';
+
+  // Simplified permission flags for UI. Server actions will have their own checks.
+  const canModifyCaseDetails = isAdmin || isAttorneyOrParalegal;
+  const canDeleteCase = isAdmin; // Only admin can delete a whole case
+  const canManageAssetsExpensesDocsNotesDeadlines = isAdmin || isAttorneyOrParalegal || currentUserRole === 'paralegal';
 
   const updateAction = updateCase.bind(null, id);
   const deleteAction = deleteCase.bind(null, id);
@@ -63,12 +93,6 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
   const deleteAssetAction = deleteAsset.bind(null, id);
   const addExpenseAction = addExpense.bind(null, id);
   const deleteExpenseAction = deleteExpense.bind(null, id);
-
-  // Function to handle document download
-  const handleDownload = async (filePath: string) => {
-    const url = await getSignedDocumentUrl(filePath);
-    if (url) window.open(url, '_blank');
-  };
 
   const uploadDocAction = uploadDocument.bind(null, id);
 
@@ -85,11 +109,12 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
               <span className="text-sm font-medium">Back to Dashboard</span>
             </Link>
             <div className="flex gap-3">
-              <SubmitButton 
+              <SubmitButton
                 form="case-form"
                 icon={<Save className="h-4 w-4" />}
                 loadingText="Saving..."
                 className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                disabled={!canModifyCaseDetails} // Disable if not allowed to modify
               >
                 Save Changes
               </SubmitButton>
@@ -100,17 +125,28 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                 className="flex items-center gap-2 bg-white border border-red-200 text-red-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-50 transition-colors"
                 loadingText="Deleting Case..."
                 loadingIcon={<Loader2 className="h-4 w-4 animate-spin" />}
+                disabled={!canDeleteCase} // Only admin can delete
               >
                 <Trash2 className="h-4 w-4" />
                 Delete
               </ConfirmButton>
-              <Link 
-                href={`/admin/newCaseSheet/pdfDownload?case_number=${caseData.case_number}`}
-                className="flex items-center gap-2 bg-white border border-slate-300 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50"
-              >
-                <Download className="h-4 w-4" />
-                Generate Documents
-              </Link>
+              {isClient ? (
+                <div 
+                  className="flex items-center gap-2 bg-slate-50 border border-slate-200 text-slate-400 px-4 py-2 rounded-lg text-sm font-medium cursor-not-allowed"
+                  title="Clients cannot generate documents"
+                >
+                  <Download className="h-4 w-4" />
+                  Generate Documents
+                </div>
+              ) : (
+                <Link 
+                  href={`/admin/newCaseSheet/pdfDownload?case_number=${caseData.case_number}`}
+                  className="flex items-center gap-2 bg-white border border-slate-300 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50"
+                >
+                  <Download className="h-4 w-4" />
+                  Generate Documents
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -125,6 +161,7 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                   name="status"
                   defaultValue={caseData.status}
                   className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded uppercase border-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                  disabled={!canModifyCaseDetails}
                 >
                   <option value="intake">Intake</option>
                   <option value="pending">Pending</option>
@@ -136,6 +173,7 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                   name="case_number"
                   defaultValue={caseData.case_number}
                   className="text-slate-400 font-mono text-sm bg-transparent border-none p-0 focus:ring-0 w-32"
+                  readOnly={!canModifyCaseDetails}
                 />
               </div>
               <h1 className="text-3xl font-bold text-slate-900">
@@ -143,7 +181,12 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
               </h1>
               <div className="flex items-center gap-1 text-slate-500 mt-1">
                 <span>Grounds: NY DRL §</span>
-                <input name="grounds" defaultValue={caseData.grounds} className="bg-transparent border-none p-0 focus:ring-0 font-medium text-slate-700 w-24" />
+                <input 
+                  name="grounds" 
+                  defaultValue={caseData.grounds} 
+                  className="bg-transparent border-none p-0 focus:ring-0 font-medium text-slate-700 w-24" 
+                  readOnly={!canModifyCaseDetails}
+                />
               </div>
             </div>
           </div>
@@ -170,6 +213,7 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                         step="0.01"
                         defaultValue={caseData.maintenance_guideline}
                         className="bg-transparent border-none p-0 focus:ring-0 font-bold w-full"
+                        readOnly={!canModifyCaseDetails}
                       />
                     </div>
                   </div>
@@ -183,6 +227,7 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                         step="0.01"
                         defaultValue={caseData.child_support_guideline}
                         className="bg-transparent border-none p-0 focus:ring-0 font-bold w-full"
+                        readOnly={!canModifyCaseDetails}
                       />
                     </div>
                   </div>
@@ -212,6 +257,7 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                             name={`assets[${asset.id}][asset_type]`}
                             defaultValue={asset.asset_type}
                             className="bg-transparent border-none p-0 focus:ring-0 w-full"
+                            disabled={!canManageAssetsExpensesDocsNotesDeadlines}
                           >
                             <option value="real_estate">Real Estate</option>
                             <option value="bank_account">Bank Account</option>
@@ -226,6 +272,7 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                             name={`assets[${asset.id}][description]`}
                             defaultValue={asset.description}
                             className="bg-transparent border-none p-0 focus:ring-0 w-full"
+                            readOnly={!canManageAssetsExpensesDocsNotesDeadlines}
                           />
                         </td>
                         <td className="px-6 py-4 text-sm text-right font-medium">
@@ -237,6 +284,7 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                               step="0.01"
                               defaultValue={asset.estimated_value}
                               className="bg-transparent border-none p-0 focus:ring-0 font-medium text-right w-24"
+                              readOnly={!canManageAssetsExpensesDocsNotesDeadlines}
                             />
                           </div>
                         </td>
@@ -247,6 +295,7 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                             className="text-slate-300 hover:text-red-600 transition-colors"
                             loadingText="Deleting..."
                             loadingIcon={<Loader2 className="h-4 w-4 animate-spin" />}
+                            disabled={!canManageAssetsExpensesDocsNotesDeadlines}
                           >
                             <Trash2 className="h-4 w-4" />
                           </ConfirmButton>
@@ -254,7 +303,8 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                       </tr>
                     ))}
                     {/* Quick Add Asset Row */}
-                    <tr className="bg-blue-50/30">
+                    {canManageAssetsExpensesDocsNotesDeadlines && (
+                      <tr className="bg-blue-50/30">
                       <td className="px-6 py-3">
                         <select name="new_asset_type" className="bg-transparent border-dashed border-slate-300 rounded text-sm w-full focus:ring-blue-500">
                           <option value="real_estate">Real Estate</option>
@@ -274,6 +324,7 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                           <button 
                             formAction={addAssetAction}
                             className="p-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                            disabled={!canManageAssetsExpensesDocsNotesDeadlines}
                           >
                             <Plus className="h-4 w-4" />
                           </button>
@@ -281,6 +332,7 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                       </td>
                       <td></td>
                     </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -310,6 +362,7 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                             name={`expenses[${exp.id}][category]`}
                             defaultValue={exp.category}
                             className="bg-transparent border-none p-0 focus:ring-0 w-full"
+                            readOnly={!canManageAssetsExpensesDocsNotesDeadlines}
                           />
                         </td>
                         <td className="px-6 py-4 text-sm text-slate-600">
@@ -317,6 +370,7 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                             name={`expenses[${exp.id}][description]`}
                             defaultValue={exp.description}
                             className="bg-transparent border-none p-0 focus:ring-0 w-full"
+                            readOnly={!canManageAssetsExpensesDocsNotesDeadlines}
                           />
                         </td>
                         <td className="px-6 py-4 text-sm text-right font-medium">
@@ -328,6 +382,7 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                               step="0.01"
                               defaultValue={exp.amount}
                               className="bg-transparent border-none p-0 focus:ring-0 font-medium text-right w-20"
+                              readOnly={!canManageAssetsExpensesDocsNotesDeadlines}
                             />
                           </div>
                         </td>
@@ -338,13 +393,15 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                             className="text-slate-300 hover:text-red-600"
                             loadingText="Deleting..."
                             loadingIcon={<Loader2 className="h-4 w-4 animate-spin" />}
+                            disabled={!canManageAssetsExpensesDocsNotesDeadlines}
                           >
                             <Trash2 className="h-4 w-4" />
                           </ConfirmButton>
                         </td>
                       </tr>
                     ))}
-                    <tr className="bg-emerald-50/30">
+                    {canManageAssetsExpensesDocsNotesDeadlines && (
+                      <tr className="bg-emerald-50/30">
                       <td className="px-6 py-3">
                         <select name="new_exp_category" className="bg-transparent border-dashed border-slate-300 rounded text-sm w-full">
                           <option value="Housing">Housing</option>
@@ -364,6 +421,7 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                           <input name="new_exp_amount" type="number" placeholder="0.00" className="bg-transparent border-dashed border-slate-300 rounded text-sm w-20 text-right" />
                           <SubmitButton formAction={addExpenseAction} className="p-1.5 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
                             loadingText="Adding..."
+                            disabled={!canManageAssetsExpensesDocsNotesDeadlines}
                           >
                             {<Plus className="h-4 w-4" />}
                           </SubmitButton>
@@ -371,6 +429,7 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                       </td>
                       <td></td>
                     </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -398,6 +457,7 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                           <SubmitButton className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1"
                             icon={<CheckCircle2 className="h-3.5 w-3.5" />}
                             loadingText="Completing..."
+                            disabled={!canManageAssetsExpensesDocsNotesDeadlines}
                           >
                             Complete
                           </SubmitButton>
@@ -417,13 +477,13 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                   Discovery Repository
                 </h3>
                 <div className="flex gap-2">
-                  <select name="category" className="text-xs border-slate-200 rounded-md py-1 bg-white">
+                  <select name="category" className="text-xs border-slate-200 rounded-md py-1 bg-white" disabled={!canManageAssetsExpensesDocsNotesDeadlines}>
                     <option value="Discovery">Discovery</option>
                     <option value="Pleading">Pleading</option>
                     <option value="Financial">Financial</option>
                     <option value="Correspondence">Correspondence</option>
                   </select>
-                  <FileUploadClient uploadAction={uploadDocAction} />
+                  <FileUploadClient uploadAction={uploadDocAction} disabled={!canManageAssetsExpensesDocsNotesDeadlines} />
                 </div>
               </div>
               <div className="p-0">
@@ -440,16 +500,11 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                     {caseData.documents?.map((doc: any) => (
                       <tr key={doc.id} className="hover:bg-slate-50/30 transition-colors group">
                         <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <FileIcon className="h-4 w-4 text-blue-500 shrink-0" />
-                            <button
-                              type="button"
-                              onClick={() => handleDownload(doc.file_path)}
-                              className="text-sm font-medium text-slate-700 hover:text-blue-600 hover:underline text-left"
-                            >
-                              {doc.file_name}
-                            </button>
-                          </div>
+                          <DocumentDownloadButton 
+                            filePath={doc.file_path} 
+                            fileName={doc.file_name} 
+                            disabled={isClient}
+                          />
                         </td>
                         <td className="px-6 py-4 text-center">
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-500 uppercase">{doc.category}</span>
@@ -465,6 +520,7 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                             className="text-slate-300 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100"
                             loadingText="Deleting..."
                             loadingIcon={<Loader2 className="h-4 w-4 animate-spin" />}
+                            disabled={!canManageAssetsExpensesDocsNotesDeadlines}
                           >
                             <Trash2 className="h-4 w-4" />
                           </ConfirmButton>
@@ -488,7 +544,8 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                 </h3>
               </div>
               <div className="p-6 space-y-6">
-                <div className="flex gap-4">
+                {canManageAssetsExpensesDocsNotesDeadlines && ( // Only show note input if user can manage
+                  <div className="flex gap-4">
                   <textarea 
                     name="note_content"
                     placeholder="Add a case update or strategy note..."
@@ -497,10 +554,12 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                   <SubmitButton formAction={addNoteAction} className="bg-slate-100 text-slate-700 px-4 rounded-lg hover:bg-slate-200 transition-colors self-end h-10 flex items-center gap-2 text-sm font-medium"
                     icon={<PlusCircle className="h-4 w-4" />}
                     loadingText="Posting..."
+                    disabled={!canManageAssetsExpensesDocsNotesDeadlines}
                   >
                     Post Note
                   </SubmitButton>
                 </div>
+                )}
                 <div className="space-y-4 border-t border-slate-50 pt-4">
                   {caseData.notes?.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).map((note: any) => (
                     <div key={note.id} className="bg-slate-50/50 p-4 rounded-lg border border-slate-100">

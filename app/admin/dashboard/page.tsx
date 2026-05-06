@@ -6,8 +6,10 @@ import { Scale, Clock, AlertCircle, FileText } from "lucide-react";
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Suspense } from 'react';
+import { DashboardFilters } from './filters';
 
-async function DashboardContent() {
+async function DashboardContent({ searchParams }: { searchParams: Promise<{ search?: string, status?: string }> }) {
+  const resolvedParams = await searchParams;
   const supabase = await createClient();    
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   
@@ -15,7 +17,7 @@ async function DashboardContent() {
     redirect('/auth/login');
   }
   
-  const cases = await getAttorneyDashboardData(user.id);
+  const cases = await getAttorneyDashboardData(user.id, resolvedParams.search, resolvedParams.status);
 
   // Calculate statistics
   const activeCasesCount = cases.length;
@@ -49,6 +51,9 @@ async function DashboardContent() {
           + New Divorce Case
         </Link>
       </header>
+
+      {/* Search and Filters */}
+      <DashboardFilters />
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -137,10 +142,10 @@ function LoadingState() {
   );
 }
 
-export default function Page() {
+export default function Page({ searchParams }: { searchParams: Promise<{ search?: string, status?: string }> }) {
   return (
     <Suspense fallback={<LoadingState />}>
-      <DashboardContent />
+      <DashboardContent searchParams={searchParams} />
     </Suspense>
   );
 }
