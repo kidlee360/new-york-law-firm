@@ -12,6 +12,7 @@ export async function getAttorneyDashboardData(userId?: string, search?: string,
     p_search: search?.trim() || null,
     p_from: from,
     p_to: to,
+    p_status: status?.trim() || null
   });
   
   if (error) throw error;
