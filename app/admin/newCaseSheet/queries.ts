@@ -68,7 +68,8 @@ export async function createNewNYCase(
     .from('parties')
     .insert([{
       ...clientPartyData,
-      case_id: newCase.id
+      case_id: newCase.id,
+      user_id: user.id, // Link the client party to the current user
     }]);
   if (clientError) throw clientError;
 

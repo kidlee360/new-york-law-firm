@@ -7,8 +7,9 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { DashboardFilters } from './filters';
+import { getPagination } from './utils';
 
-async function DashboardContent({ searchParams }: { searchParams: Promise<{ search?: string, status?: string }> }) {
+async function DashboardContent({ searchParams }: { searchParams: Promise<{ search?: string, status?: string, page?: number}> }) {
   const resolvedParams = await searchParams;
   const supabase = await createClient();    
   const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -17,26 +18,30 @@ async function DashboardContent({ searchParams }: { searchParams: Promise<{ sear
     redirect('/auth/login');
   }
   
-  const cases = await getAttorneyDashboardData(user.id, resolvedParams.search, resolvedParams.status);
+  const cases = await getAttorneyDashboardData(user.id, resolvedParams.search, resolvedParams.status, resolvedParams.page);
 
   // Calculate statistics
   const activeCasesCount = cases.length;
-  const pendingServiceCount = cases.filter(c => c.status === 'intake' || c.status === 'pending').length;
+  const pendingServiceCount = cases.filter((c: any) => c.status === 'intake' || c.status === 'pending').length;
   
   const today = new Date();
   const sevenDaysFromNow = new Date();
   sevenDaysFromNow.setDate(today.getDate() + 7);
 
+  const PAGE_SIZE = 10;
+  const currentPage = Number(resolvedParams.page) || 0;
+  const totalPages = Math.ceil(cases.length / PAGE_SIZE);
+
   let urgentDeadlinesCount = 0;
-  cases.forEach(c => {
-    c.deadlines?.forEach(d => {
+  cases.forEach((c: any) => {
+    c.deadlines?.forEach((d: any) => {
       const dueDate = new Date(d.due_date);
       if (!d.completed && dueDate >= today && dueDate <= sevenDaysFromNow) {
         urgentDeadlinesCount++;
       }
     });
   });
-  const filesToReviewCount = cases.filter(c => c.status === 'discovery').length;
+  const filesToReviewCount = cases.filter((c: any) => c.status === 'discovery').length;
   
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8">
@@ -76,9 +81,9 @@ async function DashboardContent({ searchParams }: { searchParams: Promise<{ sear
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {cases.map((c) => {
-              const client = c.parties?.find(p => p.is_client);
-              const nextDeadline = c.deadlines?.find(d => !d.completed);
+            {cases.map((c: any) => {
+              const client = c.parties?.find((p: any) => p.is_client);
+              const nextDeadline = c.deadlines?.find((d: any) => !d.completed);
               
               return (
                 <tr key={c.id} className="hover:bg-slate-50/50 transition-colors">
@@ -109,6 +114,24 @@ async function DashboardContent({ searchParams }: { searchParams: Promise<{ sear
             })}
           </tbody>
         </table>
+      </div>
+      {/* Pagination Controls (Next/Prev buttons) */}
+      <div className="flex gap-4">
+        {currentPage > 0 ? (
+          <Link href={`?page=${currentPage - 1}`} className="text-slate-900 hover:underline">
+            Previous
+          </Link>
+        ) : (
+          <span className="text-slate-400">Previous</span>
+        )}
+        <span>Page {currentPage + 1} of {totalPages}</span>
+        {currentPage < totalPages - 1 ? (
+          <Link href={`?page=${currentPage + 1}`} className="text-slate-900 hover:underline">
+            Next
+          </Link>
+        ) : (
+          <span className="text-slate-400">Next</span>
+        )}
       </div>
     </div>
   );

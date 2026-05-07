@@ -1,53 +1,26 @@
 import { createClient } from "@/lib/supabase/server";
+import { getPagination } from "./utils";
 
-export async function getAttorneyDashboardData(userId?: string, search?: string, status?: string) {
+export async function getAttorneyDashboardData(userId?: string, search?: string, status?: string, page?: number) {
   const supabase = await createClient();
+  const PAGE_SIZE = 10;
+  const currentPage = page || 0;
+  const { from, to } = getPagination(currentPage, PAGE_SIZE);
 
-  let query = supabase
-    .from('cases')
-    .select(`
-      id,
-      created_at,
-      case_number,
-      status,
-      grounds,
-      date_filed,
-      parties!inner (
-        first_name,
-        last_name,
-        role,
-        is_client,
-        user_id
-      ),
-      deadlines (
-        title,
-        due_date,
-        completed
-      )
-    `);
-
-  // Filter by status if selected
-  if (status && status !== 'all') {
-    query = query.eq('status', status);
-  }
-
-  // Global search across case number and party names
-  if (search) {
-    // For many-to-one relations in an OR logic tree, use the relation(column.op.val) syntax.
-    // Since we are using !inner in the select, this allows us to search across the join.
-    // Ensure there are NO spaces between the relation name and the parentheses.
-    query = query.or(`case_number.ilike.%${search}%,parties(first_name.ilike.%${search}%),parties(last_name.ilike.%${search}%)`);
-  }
-
-  // Filter by user association. 
-  // Note: If you only want cases where the user is a party, 
-  // you may need to use 'parties!inner(...)' in the select statement.
-  const { data: cases, error } = await query
-    .order('created_at', { ascending: false })
-    .eq('parties.user_id', userId as string);
-
+  const { data: cases, error } = await supabase.rpc('search_cases_for_user', {
+    p_user_id: userId,
+    p_search: search?.trim() || null,
+    p_from: from,
+    p_to: to,
+  });
+  
   if (error) throw error;
-  return cases;
+  console.log('Fetched cases:', cases);
+  console.log('Total cases count:', cases.length);
+  console.log('Range:', from, to);
+  return (cases);
+
+  
 }
 
 export async function getCaseById(id: string) {
@@ -67,3 +40,6 @@ export async function getCaseById(id: string) {
   if (error) throw error;
   return data;
 }
+
+
+
