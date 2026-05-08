@@ -16,6 +16,9 @@ export async function getAttorneyDashboardData(userId?: string, search?: string,
   });
   
   if (error) throw error;
+  console.log('userId:', userId);
+  console.log('status filter:', status);
+  console.log('search filter:', search);
   console.log('Fetched cases:', cases);
   console.log('Total cases count:', cases.length);
   console.log('Range:', from, to);

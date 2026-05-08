@@ -116,7 +116,7 @@ async function DashboardContent({ searchParams }: { searchParams: Promise<{ sear
         </table>
       </div>
       {/* Pagination Controls (Next/Prev buttons) */}
-      <div className="flex gap-4">
+      <div className="flex gap-4 justify-center">
         {currentPage > 0 ? (
           <Link href={`?page=${currentPage - 1}`} className="text-slate-900 hover:underline">
             Previous
