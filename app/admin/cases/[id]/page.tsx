@@ -69,6 +69,14 @@ async function getCaseDetails(id: string) {
     notFound(); // Case not found or other error
   }
 
+  // Security: If user is a client, verify they are a party to this specific case
+  if (profile.role === 'client') {
+    const isUserInCase = caseDataResult.parties?.some((p: any) => p.user_id === user.id);
+    if (!isUserInCase) {
+      redirect('/unauthorized'); // Or a generic portal page
+    }
+  }
+
   return { caseData: caseDataResult, currentUserRole, currentUserId: user.id };
 }
 
@@ -104,7 +112,7 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
         {/* Top Navigation Bar */}
         <div className="bg-white border-b border-slate-200 px-8 py-4">
           <div className="max-w-7xl mx-auto flex justify-between items-center">
-            <Link href="/admin/dashboard" className="flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors">
+            <Link href={isClient ? "/portal" : "/admin/dashboard"} className="flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors">
               <ArrowLeft className="h-4 w-4" />
               <span className="text-sm font-medium">Back to Dashboard</span>
             </Link>
