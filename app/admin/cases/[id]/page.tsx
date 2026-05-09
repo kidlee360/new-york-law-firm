@@ -453,15 +453,15 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                         </div>
                       </div>
                       {!deadline.completed && (
-                        <form action={markAsCompleteAction} className="flex"> {/* Added flex to align button content */}
-                          <SubmitButton className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1"
-                            icon={<CheckCircle2 className="h-3.5 w-3.5" />}
-                            loadingText="Completing..."
-                            disabled={!canManageAssetsExpensesDocsNotesDeadlines}
-                          >
-                            Complete
-                          </SubmitButton>
-                        </form>
+                        <SubmitButton 
+                          formAction={markAsCompleteAction}
+                          className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                          icon={<CheckCircle2 className="h-3.5 w-3.5" />}
+                          loadingText="Completing..."
+                          disabled={!canManageAssetsExpensesDocsNotesDeadlines}
+                        >
+                          Complete
+                        </SubmitButton>
                       )}
                     </div>
                   );
