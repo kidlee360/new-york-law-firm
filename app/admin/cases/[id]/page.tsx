@@ -10,6 +10,7 @@ import {
   ArrowLeft, 
   Download,
   DollarSign,
+  Check,
   Briefcase,
   Save,
   CheckCircle2,
@@ -461,14 +462,13 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
                         </div>
                       </div>
                       {!deadline.completed && (
-                        <SubmitButton 
+                        <SubmitButton
                           formAction={markAsCompleteAction}
-                          className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1"
-                          icon={<CheckCircle2 className="h-3.5 w-3.5" />}
-                          loadingText="Completing..."
-                          disabled={!canManageAssetsExpensesDocsNotesDeadlines}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-md border border-black hover:bg-blue-600 hover:text-white transition-all text-xs font-bold shadow-sm"
+                          icon={<Check className="h-3.5 w-3.5" />}
+                          loadingText="Processing..."
                         >
-                          Complete
+                          Mark as Complete
                         </SubmitButton>
                       )}
                     </div>
