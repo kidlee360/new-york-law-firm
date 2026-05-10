@@ -30,6 +30,7 @@ export default function NewCaseSheet() {
   const [clientState, setClientState] = useState("");
   const [clientZip, setClientZip] = useState("");
   const [clientPhone, setClientPhone] = useState("");
+  const [clientEmail, setClientEmail] = useState("");
   const [spouseName, setSpouseName] = useState("");
   const [spouseAddress1, setSpouseAddress1] = useState("");
   const [spouseAddress2, setSpouseAddress2] = useState("");
@@ -37,6 +38,7 @@ export default function NewCaseSheet() {
   const [spouseState, setSpouseState] = useState("");
   const [spouseZip, setSpouseZip] = useState("");
   const [spousePhone, setSpousePhone] = useState("");
+  const [spouseEmail, setSpouseEmail] = useState("");
   const [deadlinePreview, setDeadlinePreview] = useState("");
   const [selectedGrounds, setSelectedGrounds] = useState("170.7");
   const [assets, setAssets] = useState<any[]>([]);
@@ -102,6 +104,7 @@ export default function NewCaseSheet() {
       const clientPartyData = {
         first_name: clientName.split(' ')[0] || clientName,
         last_name: clientName.split(' ').slice(1).join(' ') || '',
+        email: clientEmail,
         phone: clientPhone,
         address_line_1: clientAddress1,
         address_line_2: clientAddress2,
@@ -115,6 +118,7 @@ export default function NewCaseSheet() {
       const spousePartyData = {
         first_name: spouseName.split(' ')[0] || spouseName,
         last_name: spouseName.split(' ').slice(1).join(' ') || '',
+        email: spouseEmail,
         phone: spousePhone,
         address_line_1: spouseAddress1,
         address_line_2: spouseAddress2,
@@ -190,6 +194,28 @@ export default function NewCaseSheet() {
                       setSpouseName(e.target.value);
                       handleNameSearch(e.target.value);
                     }}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <label className="text-sm font-semibold text-slate-700">Client Email Address</label>
+                  <input
+                    type="email"
+                    className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                    placeholder="client@example.com"
+                    value={clientEmail}
+                    onChange={(e) => setClientEmail(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-3">
+                  <label className="text-sm font-semibold text-slate-700">Spouse Email Address</label>
+                  <input
+                    type="email"
+                    className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                    placeholder="spouse@example.com"
+                    value={spouseEmail}
+                    onChange={(e) => setSpouseEmail(e.target.value)}
                   />
                 </div>
               </div>
