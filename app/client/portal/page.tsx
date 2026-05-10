@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
-import { getAttorneyDashboardData } from '@/app/admin/dashboard/queries';
+import { getClientData } from './queries';
 import { Scale, Calendar, FileText, MessageSquare, ArrowRight } from "lucide-react";
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -14,7 +14,7 @@ async function PortalContent() {
   }
   
   // We reuse the query logic but it will only return cases linked to this user_id
-  const cases = await getAttorneyDashboardData(user.id);
+  const cases = await getClientData();
 
   if (!cases || cases.length === 0) {
     return (

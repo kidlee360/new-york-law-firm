@@ -48,6 +48,7 @@ export function SignUpForm({
           emailRedirectTo: `${window.location.origin}/protected`,
           data: {
             full_name: fullName, // This will be stored in auth.users.user_metadata
+            email: email, // For convenience, we can also store email in user_metadata which can thn be sent to the profiles table through a trigger, but it's already in the auth.users table
           },
         },
       });
