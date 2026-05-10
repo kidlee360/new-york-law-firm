@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { Resend } from "resend";
 
 // Helper function to get user's role (consistent with form/actions.ts)
 async function getUserRole(userId: string): Promise<string | null> {
@@ -45,6 +46,9 @@ export async function createNewNYCase(
   spousePartyData: any
 ) {
   const supabase = await createClient();
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const clientEmail = clientPartyData.email;
+  const spouseEmail = spousePartyData.email;
 
   // RBAC check: Only admin, attorney, or paralegal can create a new case
   const { data: { user } } = await supabase.auth.getUser();
@@ -81,6 +85,14 @@ export async function createNewNYCase(
       case_id: newCase.id
     }]);
   if (spouseError) throw spouseError;
+
+  const { error: emailError } = await resend.emails.send({
+    from: "New York Matrimonial Division <cases@newyorkmatrimonial.com>",
+    to: [clientEmail, spouseEmail],
+    subject: "Your New Case Has Been Created",
+    html: "<p>A new case has been created for you.</p>"
+  });
+  if (emailError) throw emailError;
 
   // 4. Automatically create the 120-Day Deadline task
   const { error: deadlineError } = await supabase
