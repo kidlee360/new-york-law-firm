@@ -104,21 +104,21 @@ export function SignUpForm({
                   <Label htmlFor="password">Password</Label>
                 </div>
                 <div className="relative w-full flex justify-between items-center">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-                <button
-                  type="button"
-                  onClick={togglePasswordVisibility}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
-                >
-                  {showPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
-                </button>
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={togglePasswordVisibility}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+                  >
+                    {showPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
+                  </button>
                 </div>
               </div>
               <div className="grid gap-2">

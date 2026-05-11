@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai'; 
 
 export function LoginForm({
   className,
@@ -22,6 +23,7 @@ export function LoginForm({
 }: React.ComponentPropsWithoutRef<"div">) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -65,6 +67,11 @@ export function LoginForm({
     }
   };
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -98,13 +105,23 @@ export function LoginForm({
                     Forgot your password?
                   </Link>
                 </div>
-                <Input
-                  id="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+                <div className="relative w-full flex justify-between items-center">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={togglePasswordVisibility}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+                  >
+                    {showPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
+                  </button>
+                </div>
               </div>
               {error && <p className="text-sm text-red-500">{error}</p>}
               <Button type="submit" className="w-full" disabled={isLoading}>
