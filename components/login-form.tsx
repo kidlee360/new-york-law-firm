@@ -54,7 +54,7 @@ export function LoginForm({
       if (profile?.role === "attorney") {
         router.push("/admin/dashboard");
       } else if (profile?.role === "client") {
-        router.push("/protected");
+        router.push("/client/portal");
       }else {
         router.push("/auth/login");
       }
