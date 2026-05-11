@@ -8,12 +8,12 @@ export async function getClientData() {
   const { data, error } = await supabase
   .from("cases")
   .select(`*,
-    parties (*),
+    parties!inner (*),
     notes (*),
-    documents (*)
+    documents (*),
+    deadlines (*)
   `)
-  .eq("parties.email", email)
-  .single();
+  .eq("parties.email", email);
   if (error) throw error;
   return data;
 }
