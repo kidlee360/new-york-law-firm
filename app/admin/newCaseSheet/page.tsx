@@ -152,42 +152,42 @@ export default function NewCaseSheet() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 px-8 py-6">
+      <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-8 py-6 transition-colors">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div>
-            <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
-              <Link href="/admin/dashboard" className="hover:underline">Dashboard</Link>
+            <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-1">
+              <Link href="/admin/dashboard" className="hover:underline dark:hover:text-slate-200">Dashboard</Link>
               <span>/</span>
-              <span className="text-slate-900">New Case</span>
+              <span className="text-slate-900 dark:text-slate-100">New Case</span>
             </div>
-            <h1 className="text-2xl font-bold text-slate-900">Intake: New Matrimonial Matter</h1>
-            <p className="text-slate-500 mt-1">Create a new divorce case file with client and adverse party information.</p>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Intake: New Matrimonial Matter</h1>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">Create a new divorce case file with client and adverse party information.</p>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-8 py-8">
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
           <div className="p-6 space-y-8">
             {/* Section 1: Parties Information */}
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-3">
-                  <label className="text-sm font-semibold text-slate-700">Client Full Name</label>
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Client Full Name</label>
                   <input
-                    className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                    className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                     placeholder="First & Last Name"
                     value={clientName}
                     onChange={(e) => setClientName(e.target.value)}
                   />
                 </div>
                 <div className="space-y-3">
-                  <label className="text-sm font-semibold text-slate-700">Adverse Party (Spouse) Name</label>
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Adverse Party (Spouse) Name</label>
                   <input
-                    className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                    className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                     placeholder="First & Last Name"
                     value={spouseName}
                     onChange={(e) => {
@@ -199,20 +199,20 @@ export default function NewCaseSheet() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-3">
-                  <label className="text-sm font-semibold text-slate-700">Client Email Address</label>
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Client Email Address</label>
                   <input
                     type="email"
-                    className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                    className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                     placeholder="client@example.com"
                     value={clientEmail}
                     onChange={(e) => setClientEmail(e.target.value)}
                   />
                 </div>
                 <div className="space-y-3">
-                  <label className="text-sm font-semibold text-slate-700">Spouse Email Address</label>
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Spouse Email Address</label>
                   <input
                     type="email"
-                    className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                    className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                     placeholder="spouse@example.com"
                     value={spouseEmail}
                     onChange={(e) => setSpouseEmail(e.target.value)}
@@ -221,20 +221,20 @@ export default function NewCaseSheet() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-3">
-                  <label className="text-sm font-semibold text-slate-700">Client Phone Number</label>
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Client Phone Number</label>
                   <input
                     type="tel"
-                    className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                    className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                     placeholder="(555) 555-5555"
                     value={clientPhone}
                     onChange={(e) => setClientPhone(e.target.value)}
                   />
                 </div>
                 <div className="space-y-3">
-                  <label className="text-sm font-semibold text-slate-700">Spouse Phone Number</label>
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Spouse Phone Number</label>
                   <input
                     type="tel"
-                    className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                    className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                     placeholder="(555) 555-5555"
                     value={spousePhone}
                     onChange={(e) => setSpousePhone(e.target.value)}
@@ -243,31 +243,31 @@ export default function NewCaseSheet() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-3">
-                  <label className="text-sm font-semibold text-slate-700">Client Address Line 1</label>
-                  <input type="text" className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Street Address" value={clientAddress1} onChange={(e) => setClientAddress1(e.target.value)} />
-                  <label className="text-sm font-semibold text-slate-700">Client Address Line 2 (Optional)</label>
-                  <input type="text" className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Apt, Suite, etc." value={clientAddress2} onChange={(e) => setClientAddress2(e.target.value)} />
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Client Address Line 1</label>
+                  <input type="text" className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Street Address" value={clientAddress1} onChange={(e) => setClientAddress1(e.target.value)} />
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Client Address Line 2 (Optional)</label>
+                  <input type="text" className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Apt, Suite, etc." value={clientAddress2} onChange={(e) => setClientAddress2(e.target.value)} />
                   <div className="grid grid-cols-3 gap-3">
-                    <input type="text" className="col-span-2 border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="City" value={clientCity} onChange={(e) => setClientCity(e.target.value)} />
-                    <input type="text" className="border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="State" value={clientState} onChange={(e) => setClientState(e.target.value)} />
+                    <input type="text" className="col-span-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="City" value={clientCity} onChange={(e) => setClientCity(e.target.value)} />
+                    <input type="text" className="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="State" value={clientState} onChange={(e) => setClientState(e.target.value)} />
                   </div>
-                  <input type="text" className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Zip Code" value={clientZip} onChange={(e) => setClientZip(e.target.value)} />
+                  <input type="text" className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Zip Code" value={clientZip} onChange={(e) => setClientZip(e.target.value)} />
                 </div>
                 <div className="space-y-3">
-                  <label className="text-sm font-semibold text-slate-700">Spouse Address Line 1</label>
-                  <input type="text" className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Street Address" value={spouseAddress1} onChange={(e) => setSpouseAddress1(e.target.value)} />
-                  <label className="text-sm font-semibold text-slate-700">Spouse Address Line 2 (Optional)</label>
-                  <input type="text" className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Apt, Suite, etc." value={spouseAddress2} onChange={(e) => setSpouseAddress2(e.target.value)} />
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Spouse Address Line 1</label>
+                  <input type="text" className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Street Address" value={spouseAddress1} onChange={(e) => setSpouseAddress1(e.target.value)} />
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Spouse Address Line 2 (Optional)</label>
+                  <input type="text" className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Apt, Suite, etc." value={spouseAddress2} onChange={(e) => setSpouseAddress2(e.target.value)} />
                   <div className="grid grid-cols-3 gap-3">
-                    <input type="text" className="col-span-2 border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="City" value={spouseCity} onChange={(e) => setSpouseCity(e.target.value)} />
-                    <input type="text" className="border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="State" value={spouseState} onChange={(e) => setSpouseState(e.target.value)} />
+                    <input type="text" className="col-span-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="City" value={spouseCity} onChange={(e) => setSpouseCity(e.target.value)} />
+                    <input type="text" className="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="State" value={spouseState} onChange={(e) => setSpouseState(e.target.value)} />
                   </div>
-                  <input type="text" className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Zip Code" value={spouseZip} onChange={(e) => setSpouseZip(e.target.value)} />
+                  <input type="text" className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Zip Code" value={spouseZip} onChange={(e) => setSpouseZip(e.target.value)} />
                 </div>
               </div>
 
               {conflict?.hasConflict && (
-                <Alert variant="destructive" className="bg-red-50 text-red-900 border-red-200">
+                <Alert variant="destructive" className="bg-red-50 dark:bg-red-900/20 text-red-900 dark:text-red-400 border-red-200 dark:border-red-900">
                   <AlertTriangle className="h-4 w-4" />
                   <AlertDescription>
                     <strong>Conflict Warning:</strong> {conflict.matches[0].full_name} was found in Case #{conflict.matches[0].case_id.slice(0,8)}.
@@ -278,8 +278,8 @@ export default function NewCaseSheet() {
 
             {/* Section 2: Grounds */}
             <div className="space-y-3">
-              <label className="text-sm font-semibold text-slate-700">Grounds for Divorce (NY DRL §170)</label>
-              <select className="w-full border border-slate-300 p-3 rounded-lg bg-white"
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Grounds for Divorce (NY DRL §170)</label>
+              <select className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 p-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer"
                 value={selectedGrounds}
                 onChange={(e) => setSelectedGrounds(e.target.value)}
               >
@@ -292,22 +292,22 @@ export default function NewCaseSheet() {
 
             {/* Section 3: Date Filed */}
             <div className="space-y-3">
-              <label className="text-sm font-semibold text-slate-700">Date Filed (Summons with Notice)</label>
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Date Filed (Summons with Notice)</label>
               <input
                 type="date"
-                className="w-full border border-slate-300 p-3 rounded-lg"
+                className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 p-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                 onChange={(e) => handleDateChange(e.target.value)}
               />
               {deadlinePreview && (
-                <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                  <p className="text-xs text-amber-800 font-semibold uppercase tracking-wider">
+                <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900 rounded-lg transition-colors">
+                  <p className="text-xs text-amber-800 dark:text-amber-400 font-semibold uppercase tracking-wider">
                     CPLR 306-b Deadline
                   </p>
-                  <p className="text-lg font-bold text-amber-900 mt-1">
+                  <p className="text-lg font-bold text-amber-900 dark:text-amber-300 mt-1">
                     {new Date(deadlinePreview).toLocaleDateString('en-US', {
                       month: 'long', day: 'numeric', year: 'numeric'
                     })}</p>
-                  <p className="text-sm text-amber-700 mt-1">
+                  <p className="text-sm text-amber-700 dark:text-amber-500 mt-1">
                     Service must be completed and affidavit filed by this date.
                   </p>
                 </div>
@@ -316,23 +316,23 @@ export default function NewCaseSheet() {
 
             {/* Section 4: Marital Assets */}
             <div className="space-y-3">
-              <label className="text-sm font-semibold text-slate-700">Marital Assets</label>
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Marital Assets</label>
               <AssetTracker onChange={(data) => setAssets(data)} />
             </div>
 
             {/* Section 5: Financial Estimators */}
             <div className="space-y-3">
-              <label className="text-sm font-semibold text-slate-700">Maintenance Estimator</label>
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Maintenance Estimator</label>
               <MaintenanceCalculator onCalculate={handleMaintenanceCalc} />
-              <label className="text-sm font-semibold text-slate-700">Child Support Estimator (CSSA)</label>
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Child Support Estimator (CSSA)</label>
               <ChildSupportCalculator onCalculate={handleChildSupportCalc} />
             </div>
 
             {/* Submit Button */}
-            <div className="pt-4 border-t border-slate-200">
+            <div className="pt-4 border-t border-slate-200 dark:border-slate-800 transition-colors">
               <button
                 disabled={conflict?.hasConflict}
-                className="w-full bg-slate-900 text-white py-4 rounded-lg font-semibold disabled:bg-slate-300 hover:bg-slate-800 transition-colors"
+                className="w-full bg-slate-900 dark:bg-blue-600 text-white py-4 rounded-lg font-semibold disabled:bg-slate-300 dark:disabled:bg-slate-800 dark:disabled:text-slate-600 hover:bg-slate-800 dark:hover:bg-blue-500 transition-colors"
                 onClick={handleSaveCase}
               >
                 Open Case File

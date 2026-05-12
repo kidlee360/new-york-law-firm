@@ -30,7 +30,7 @@ export default function FileUploadClient({ uploadAction, disabled = false }: Fil
         />
         <label 
           htmlFor="file-upload" 
-          className={`cursor-pointer flex items-center gap-2 bg-white border border-slate-300 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+          className={`cursor-pointer flex items-center gap-2 bg-white border border-slate-300 text-slate-700 px-3 py-1.5 rounded-lg text-xs  dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 font-bold transition-colors ${
             (pending || disabled) ? 'opacity-70 cursor-not-allowed' : 'hover:bg-slate-50'
           }`}
           aria-disabled={pending || disabled} // ARIA attribute for accessibility
