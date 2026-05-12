@@ -38,7 +38,7 @@ export function DashboardFilters() {
       <div className="flex items-center gap-2">
         <Filter className="h-4 w-4 text-slate-400 hidden md:block" />
         <select
-          className="px-4 py-2 border border-slate-200 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 min-w-[150px]"
+          className="px-4 py-2 border border-slate-200 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 min-w-[150px] dark:bg-slate-900 dark:border-slate-800 dark:text-slate-100 transition-all"
           defaultValue={searchParams.get('status') ?? 'all'}
           onChange={(e) => updateParams('status', e.target.value)}
         >

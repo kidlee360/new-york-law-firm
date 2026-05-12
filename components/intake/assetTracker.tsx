@@ -44,18 +44,18 @@ export function AssetTracker({ onChange }: AssetTrackerProps) {
         <button 
           onClick={addAsset}
           type="button" // Important to prevent form submission
-          className="text-xs flex items-center gap-1 bg-slate-100 px-2 py-1 rounded hover:bg-slate-200"
+          className="text-xs flex items-center gap-1 bg-slate-100 px-2 py-1 rounded hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300"
         >
           <Plus className="h-3 w-3" /> Add Asset
         </button>
       </div>
 
       {assets.map((asset, index) => (
-        <div key={index} className="flex gap-2 items-start bg-slate-50 p-3 rounded-lg border border-slate-200">
+        <div key={index} className="flex gap-2 items-start bg-slate-50 p-3 rounded-lg border border-slate-200 dark:bg-slate-800 dark:border-slate-700">
           <select 
             value={asset.type}
             onChange={(e) => updateAsset(index, 'type', e.target.value)}
-            className="text-sm border rounded p-1 bg-white"
+            className="text-sm border rounded p-1 bg-white dark:bg-slate-900 dark:border-slate-800 dark:text-slate-100"
           >
             <option value="real_estate">🏠 Real Estate</option>
             <option value="bank_account">💰 Bank/Brokerage</option>
@@ -67,7 +67,7 @@ export function AssetTracker({ onChange }: AssetTrackerProps) {
             value={asset.desc}
             onChange={(e) => updateAsset(index, 'desc', e.target.value)}
             placeholder="Description" 
-            className="flex-1 text-sm border rounded p-1"
+            className="flex-1 text-sm border rounded p-1 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-100"
           />
 
           <div className="relative">
@@ -76,7 +76,7 @@ export function AssetTracker({ onChange }: AssetTrackerProps) {
               type="number" 
               value={asset.value}
               onChange={(e) => updateAsset(index, 'value', e.target.value)}
-              className="w-24 text-sm border rounded p-1 pl-5"
+              className="w-24 text-sm border rounded p-1 pl-5 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-100"
             />
           </div>
 
