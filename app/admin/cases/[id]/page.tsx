@@ -35,7 +35,7 @@ async function getCaseDetails(id: string) {
   // Fetch current authenticated user
   const { data: { user }, error: userError } = await supabase.auth.getUser();
   if (userError || !user) {
-    redirect('/login'); // User not authenticated
+    redirect('/auth/login'); // User not authenticated
   }
 
   // Fetch user's role from profiles table
@@ -47,7 +47,7 @@ async function getCaseDetails(id: string) {
 
   if (profileError || !profile) {
     console.error('Error fetching user profile:', profileError);
-    redirect('/login'); // Or handle as unauthorized
+    redirect('/auth/login'); // Or handle as unauthorized
   }
 
   const currentUserRole = profile.role;
@@ -72,7 +72,7 @@ async function getCaseDetails(id: string) {
 
   // Security: If user is a client, verify they are a party to this specific case
   if (profile.role === 'client') {
-    const isUserInCase = caseDataResult.parties?.some((p: any) => p.user_id === user.id);
+    const isUserInCase = caseDataResult.parties?.some((p: any) => p.email === user.email);
     if (!isUserInCase) {
       redirect('/unauthorized'); // Or a generic portal page
     }
@@ -113,7 +113,7 @@ async function CaseContent({ params }: { params: Promise<{ id: string }> }) {
         {/* Top Navigation Bar */}
         <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-8 py-4">
           <div className="max-w-7xl mx-auto flex justify-between items-center">
-            <Link href={isClient ? "/portal" : "/admin/dashboard"} className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
+            <Link href={isClient ? "/client/portal" : "/admin/dashboard"} className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
               <ArrowLeft className="h-4 w-4" />
               <span className="text-sm font-medium">Back to Dashboard</span>
             </Link>
