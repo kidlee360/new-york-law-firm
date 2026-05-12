@@ -30,7 +30,7 @@ export function DashboardFilters() {
         <input
           type="text"
           placeholder="Search by client name or case number..."
-          className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all text-sm"
+          className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-100 transition-all text-sm"
           defaultValue={searchParams.get('search') ?? ''}
           onChange={(e) => updateParams('search', e.target.value)}
         />
