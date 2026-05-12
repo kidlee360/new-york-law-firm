@@ -31,7 +31,7 @@ async function fetchCaseDetails(caseNumber: string) {
     .from('cases')
     .select(`
       *,
-      parties (first_name, last_name, is_client),
+      parties (first_name, last_name, is_client, role),
       assets (asset_type, estimated_value, description)
     `)
     .eq('case_number', caseNumber)
@@ -42,8 +42,8 @@ async function fetchCaseDetails(caseNumber: string) {
   }
 
   // Extract plaintiff and defendant from the parties relation
-  const plaintiff = data.parties?.find((p: any) => p.is_client);
-  const defendant = data.parties?.find((p: any) => !p.is_client);
+  const plaintiff = data.parties?.find((p: any) => p.role === 'plaintiff' || p.is_client);
+  const defendant = data.parties?.find((p: any) => p.role === 'defendant' || (!p.is_client && p.role !== 'plaintiff'));
 
   return {
     caseData: {

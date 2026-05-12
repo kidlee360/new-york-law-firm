@@ -82,17 +82,18 @@ export async function createNewNYCase(
     .from('parties')
     .insert([{
       ...spousePartyData,
-      case_id: newCase.id
+      case_id: newCase.id,
+      user_id: user.id // Link the spouse party to the current user (attorney) for visibility/access
     }]);
   if (spouseError) throw spouseError;
 
-  const { error: emailError } = await resend.emails.send({
-    from: "New York Matrimonial Division <cases@newyorkmatrimonial.com>",
-    to: [clientEmail, spouseEmail],
-    subject: "Your New Case Has Been Created",
-    html: "<p>A new case has been created for you.</p>"
-  });
-  if (emailError) throw emailError;
+  //const { error: emailError } = await resend.emails.send({
+  //  from: "New York Matrimonial Division <cases@newyorkmatrimonial.com>",
+  //  to: [clientEmail, spouseEmail],
+  //  subject: "Your New Case Has Been Created",
+  //  html: "<p>A new case has been created for you.</p>"
+  //});
+  //if (emailError) throw emailError;
 
   // 4. Automatically create the 120-Day Deadline task
   const { error: deadlineError } = await supabase

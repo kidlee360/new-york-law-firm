@@ -30,10 +30,10 @@ export default function Home() {
           Automated CSSA 2026 calculations, secure client portals, and one-click Net Worth generation.
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4">
-          <Link href="/login?role=lawyer" className="px-8 py-4 bg-slate-900 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all">
+          <Link href="/auth/login" className="px-8 py-4 bg-slate-900 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all">
             Attorney Access
           </Link>
-          <Link href="/login?role=client" className="px-8 py-4 bg-white border-2 border-slate-200 text-slate-900 rounded-xl font-bold hover:bg-slate-50 transition-all">
+          <Link href="/auth/login" className="px-8 py-4 bg-white border-2 border-slate-200 text-slate-900 rounded-xl font-bold hover:bg-slate-50 transition-all">
             Client Portal Login
           </Link>
         </div>
